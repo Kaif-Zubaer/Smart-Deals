@@ -2,22 +2,17 @@ import React, { use, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useLoaderData } from 'react-router';
 import Swal from 'sweetalert2';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const MyBids = () => {
     const { user } = use(AuthContext);
     const [myBids, setMyBids] = useState([]);
     const products = useLoaderData();
+    const axiosSecure = useAxiosSecure();
 
-    // console.log('TOKEN:', user.accessToken);
-
-    // firebase token verify
     // useEffect(() => {
     //     if (user?.email) {
-    //         fetch(`http://localhost:3000/bids?email=${user.email}`, {
-    //             headers: {
-    //                 authorization: `Bearer ${user.accessToken}`
-    //             }
-    //         })
+    //         fetch(`http://localhost:3000/bids?email=${user.email}`)
     //             .then(res => res.json())
     //             .then(data => {
     //                 // console.log(data);
@@ -27,22 +22,12 @@ const MyBids = () => {
     //     }
     // }, [user])
 
-    // jwt token verify
     useEffect(() => {
-        if (user?.email) {
-            fetch(`http://localhost:3000/bids?email=${user.email}`, {
-                headers: {
-                    authorization: `Bearer ${localStorage.getItem('token')}`
-                }
+        axiosSecure.get(`/bids?email=${user.email}`)
+            .then(data => {
+                setMyBids(data.data);
             })
-                .then(res => res.json())
-                .then(data => {
-                    // console.log(data);
-
-                    setMyBids(data);
-                })
-        }
-    }, [user])
+    }, [user, axiosSecure])
 
     const handleRemoveBid = (_id) => {
         Swal.fire({

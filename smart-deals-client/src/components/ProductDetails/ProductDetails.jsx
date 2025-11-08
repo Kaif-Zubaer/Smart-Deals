@@ -1,6 +1,7 @@
 import React, { use, useEffect, useRef, useState } from 'react';
 import { Link, useLoaderData } from 'react-router';
 import { AuthContext } from '../../context/AuthContext';
+import axios from 'axios';
 
 const ProductDetails = () => {
     const { user } = use(AuthContext);
@@ -28,18 +29,22 @@ const ProductDetails = () => {
         seller_contact
     } = productDetails;
 
+    // useEffect(() => {
+    //     fetch(`http://localhost:3000/products/bids/${_id}`)
+    //         .then(res => res.json())
+    //         .then(data => {
+    //             // console.log(data);
+    //             setBids(data);
+    //         })
+    // }, [_id])
+
     useEffect(() => {
-        fetch(`http://localhost:3000/products/bids/${_id}`, {
-            headers: {
-                authorization: `Bearer ${user.accessToken}`
-            }
-        })
-            .then(res => res.json())
+        axios.get(`http://localhost:3000/products/bids/${_id}`)
             .then(data => {
                 // console.log(data);
-                setBids(data);
+                setBids(data.data);
             })
-    }, [_id, user])
+    }, [_id])
 
     const handleBidModalOpen = () => {
         bidModalRef.current.showModal();

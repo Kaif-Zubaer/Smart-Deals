@@ -14,6 +14,7 @@ import MyBids from './components/MyBids/MyBids.jsx';
 import CreateProduct from './components/CreateProduct/CreateProduct.jsx';
 import PrivateRoute from './routes/PrivateRoute.jsx';
 import ProductDetails from './components/ProductDetails/ProductDetails.jsx';
+import Loading from './components/Loading/Loading.jsx';
 
 const router = createBrowserRouter([
   {
@@ -31,7 +32,8 @@ const router = createBrowserRouter([
       {
         path: '/product-details/:id',
         loader: ({ params }) => fetch(`http://localhost:3000/products/${params.id}`),
-        element: <PrivateRoute><ProductDetails></ProductDetails></PrivateRoute>
+        element: <PrivateRoute><ProductDetails></ProductDetails></PrivateRoute>,
+        hydrateFallbackElement: <Loading></Loading>,
       },
       {
         path: '/my-products',
@@ -41,6 +43,7 @@ const router = createBrowserRouter([
         path: '/my-bids',
         loader: () => fetch('http://localhost:3000/products'),
         element: <PrivateRoute><MyBids></MyBids></PrivateRoute>,
+        hydrateFallbackElement: <Loading></Loading>,
       },
       {
         path: '/create-product',
