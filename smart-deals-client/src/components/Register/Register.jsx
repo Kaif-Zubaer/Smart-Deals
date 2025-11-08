@@ -20,7 +20,7 @@ const Register = () => {
                     image: result.user.photoURL,
                 }
 
-                fetch('http://localhost:3000/users', {
+                fetch('https://smart-deals-eight.vercel.app/users', {
                     method: 'POST',
                     headers: {
                         'content-type': 'application/json',

@@ -30,7 +30,7 @@ const ProductDetails = () => {
     } = productDetails;
 
     // useEffect(() => {
-    //     fetch(`http://localhost:3000/products/bids/${_id}`)
+    //     fetch(`https://smart-deals-eight.vercel.app/products/bids/${_id}`)
     //         .then(res => res.json())
     //         .then(data => {
     //             // console.log(data);
@@ -39,7 +39,7 @@ const ProductDetails = () => {
     // }, [_id])
 
     useEffect(() => {
-        axios.get(`http://localhost:3000/products/bids/${_id}`)
+        axios.get(`https://smart-deals-eight.vercel.app/products/bids/${_id}`)
             .then(data => {
                 // console.log(data);
                 setBids(data.data);
@@ -76,7 +76,7 @@ const ProductDetails = () => {
             status: 'pending',
         }
 
-        fetch('http://localhost:3000/bids', {
+        fetch('https://smart-deals-eight.vercel.app/bids', {
             method: 'POST',
             headers: {
                 'content-type': 'application/json',

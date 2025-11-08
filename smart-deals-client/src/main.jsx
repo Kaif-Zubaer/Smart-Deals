@@ -31,7 +31,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/product-details/:id',
-        loader: ({ params }) => fetch(`http://localhost:3000/products/${params.id}`),
+        loader: ({ params }) => fetch(`https://smart-deals-eight.vercel.app/products/${params.id}`),
         element: <PrivateRoute><ProductDetails></ProductDetails></PrivateRoute>,
         hydrateFallbackElement: <Loading></Loading>,
       },
@@ -41,7 +41,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/my-bids',
-        loader: () => fetch('http://localhost:3000/products'),
+        loader: () => fetch('https://smart-deals-eight.vercel.app/products'),
         element: <PrivateRoute><MyBids></MyBids></PrivateRoute>,
         hydrateFallbackElement: <Loading></Loading>,
       },

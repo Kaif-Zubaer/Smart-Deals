@@ -29,7 +29,7 @@ const CreateProduct = () => {
 
         const newProduct = { title, price_max, price_min, image, seller_name, email, seller_contact, seller_image, location };
 
-        // axios.post('http://localhost:3000/products', newProduct)
+        // axios.post('https://smart-deals-eight.vercel.app/products', newProduct)
         //     .then(data => {
         //         console.log(data.data);
 
