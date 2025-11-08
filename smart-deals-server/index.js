@@ -1,13 +1,14 @@
 const express = require('express');
 const cors = require('cors');
-const admin = require("firebase-admin");
-const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// console.log(process.env);
+app.use(cors());
+app.use(express.json());
+
+const admin = require("firebase-admin");
 
 const serviceAccount = require("./smart-deals-18e92-firebase-adminsdk-fbsvc-b89bb00644.json");
 
@@ -15,41 +16,7 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
-app.use(cors());
-app.use(express.json());
-
-const logger = (req, res, next) => {
-    // console.log('logging info');
-    next();
-}
-
-const verifyFirebaseToken = async (req, res, next) => {
-    // console.log('Verify Middleware:', req.headers.authorization);
-
-    if (!req.headers.authorization) {
-        // don't give access
-        return res.status(401).send({ message: 'unauthorized access' });
-    }
-
-    const token = req.headers.authorization.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).send({ message: 'unauthorized access' });
-    }
-
-    try {
-        const userInfo = await admin.auth().verifyIdToken(token);
-        req.token_email = userInfo.email;
-        // console.log('AFTER TOKEN VALIDITION:', userInfo);
-
-        next();
-    }
-    catch {
-        return res.status(401).send({ message: 'unauthorized access' });
-    }
-}
-
-const verifyJWTToken = (req, res, next) => {
+const verifyFirabaseToken = async (req, res, next) => {
     const authorization = req.headers.authorization;
 
     if (!authorization) {
@@ -58,20 +25,15 @@ const verifyJWTToken = (req, res, next) => {
 
     const token = authorization.split(' ')[1];
 
-    if (!token) {
-        return res.status(401).send({ message: 'unauthorized access' });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({ message: 'unauthorized access' });
-        }
-
-        // console.log('AFTER DECODED', decoded);
+    try {
+        const decoded = await admin.auth().verifyIdToken(token);
         req.token_email = decoded.email;
 
         next();
-    })
+    }
+    catch (error) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
 }
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zn65wpu.mongodb.net/?appName=Cluster0`;
@@ -96,18 +58,6 @@ async function run() {
         const productsCollection = db.collection('products');
         const bidsCollection = db.collection('bids');
         const usersCollection = db.collection('users');
-
-        // JWT RELATED API
-
-        app.post('/getToken', (req, res) => {
-            const loggedUser = req.body;
-            const token = jwt.sign(
-                loggedUser,
-                process.env.JWT_SECRET,
-                { expiresIn: '1h' }
-            )
-            res.send({ token: token })
-        })
 
         // USER REELATED API
         app.get('/users', async (req, res) => {
@@ -166,7 +116,7 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/products', async (req, res) => {
+        app.post('/products', verifyFirabaseToken, async (req, res) => {
             const newProduct = req.body;
             const result = await productsCollection.insertOne(newProduct);
             res.send(result);
@@ -195,40 +145,18 @@ async function run() {
         })
 
         // BIDS RELATED API
-
-        // firebase token verify
-        // app.get('/bids', logger, verifyFirebaseToken, async (req, res) => {
-        //     // console.log(req);
-        //     // console.log('header', req.headers);
-
-        //     const email = req.query.email;
-        //     const query = {};
-
-        //     if (email) {
-        //         if (email !== req.token_email) {
-        //             return res.status(403).send({ message: 'forbiden access' });
-        //         }
-
-        //         query.buyer_email = email;
-        //     }
-
-        //     const cursor = bidsCollection.find(query);
-        //     const result = await cursor.toArray();
-        //     res.send(result);
-        // })
-
-        // jwt token verify
-        app.get('/bids', verifyJWTToken, async (req, res) => {
+        app.get('/bids', verifyFirabaseToken, async (req, res) => {
             const email = req.query.email;
             const query = {};
 
             if (email) {
                 query.buyer_email = email;
-            }
 
-            if (email !== req.token_email) {
-                return res.status(403).send({ message: 'forbiden access' });
+                if (email !== req.token_email) {
+                    return res.status(403).send({ message: 'forbiden access' });
+                }
             }
+        
 
             const cursor = bidsCollection.find(query);
             const result = await cursor.toArray();
@@ -242,7 +170,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/products/bids/:id', verifyFirebaseToken, async (req, res) => {
+        app.get('/products/bids/:id', async (req, res) => {
             const id = req.params.id;
             const query = { product: id };
             const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
