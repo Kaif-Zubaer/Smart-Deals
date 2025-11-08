@@ -1,0 +1,75 @@
+import React, { use } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { AuthContext } from '../../context/AuthContext';
+
+const Register = () => {
+    const { googleLogin } = use(AuthContext);
+
+    const navigate = useNavigate();
+
+    const handleGoogleLogin = () => {
+        googleLogin()
+            .then(result => {
+                // console.log(result.user);
+
+                navigate('/');
+
+                const newUser = {
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    image: result.user.photoURL,
+                }
+
+                fetch('http://localhost:3000/users', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify(newUser),
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        // console.log('USER DATA AFTER SAVE:', data);
+                    })
+            })
+            .catch(error => {
+                const errorCode = error.code;
+                // const errorMessage = error.message;
+                console.log(errorCode);
+            })
+    }
+
+    return (
+        <div className='max-w-[492px] mx-auto min-h-screen'>
+            <h1 className='text-center'>Register Now!</h1>
+            <p className='text-center'>Already have an account? <Link to='/login'>Login Now</Link></p>
+            <form className='flex flex-col'>
+                <label>Name</label>
+                <input type="text" name='name' placeholder='Enter your name' />
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Enter your email" />
+                <label>Image-URL</label>
+                <input type="text" name='image' placeholder='Enter your image-URL' />
+                <label>Password</label>
+                <input type="password" name="password" placeholder='Enter your password' />
+                <p>Forgot password?</p>
+                <button className='btn'>Register</button>
+            </form>
+            <p className='text-center'>OR</p>
+            <button onClick={handleGoogleLogin} className="btn w-full bg-white text-black border-[#e5e5e5]">
+                <svg aria-label="Google logo" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <g>
+                        <path d="m0 0H512V512H0" fill="#fff"></path>
+                        <path fill="#34a853" d="M153 292c30 82 118 95 171 60h62v48A192 192 0 0190 341"></path>
+                        <path fill="#4285f4" d="m386 400a140 175 0 0053-179H260v74h102q-7 37-38 57"></path>
+                        <path fill="#fbbc02" d="m90 341a208 200 0 010-171l63 49q-12 37 0 73"></path>
+                        <path fill="#ea4335" d="m153 219c22-69 116-109 179-50l55-54c-78-75-230-72-297 55"></path>
+                    </g>
+                </svg>
+                Sign Up With Google
+            </button>
+        </div>
+    );
+};
+
+export default Register;
